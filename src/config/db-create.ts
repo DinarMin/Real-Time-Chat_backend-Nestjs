@@ -3,14 +3,15 @@ import dataSource from './typeorm.datasource';
 
 async function run() {
   try {
-    console.log('Начался процесс создание базы данных');
+    console.log('Начался процесс в инициализации базы данных');
+    console.log('В процессе...');
     await createDatabase({
       options: dataSource.options,
       ifNotExist: true,
     });
-    console.log('База данных успешно создана');
+    console.log('Инициализация базы данных успешна!');
   } catch (error) {
-    console.error('Ошибка при создание базы данных');
+    console.error('Ошибка при инициализации базы данных');
   } finally {
     process.exit(0);
   }
