@@ -8,7 +8,7 @@ import { Like, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { CreateUserDto } from './dto/create-user.dto';
-import { User } from './entities/entity.user';
+import { User } from './entities/user.entity';
 import { ReponseSearchUsername } from './interfaces/response-searchUsername.interface';
 
 @Injectable()

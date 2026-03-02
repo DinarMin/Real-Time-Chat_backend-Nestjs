@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { MessageType } from '../entities/enity.messages';
+import { MessageType } from '../entities/messages.entity';
 import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
 
 export class NewTextMessageDto {

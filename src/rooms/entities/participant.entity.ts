@@ -7,8 +7,8 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-import { Rooms } from './enity.rooms';
-import { User } from 'src/users/entities/entity.user';
+import { Rooms } from './rooms.entity';
+import { User } from 'src/users/entities/user.entity';
 
 export enum RoleType {
   ADMIN = 'admin',

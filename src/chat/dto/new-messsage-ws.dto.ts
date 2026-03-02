@@ -1,5 +1,5 @@
 import { IsEnum, IsString } from 'class-validator';
-import { MessageType } from '../entities/enity.messages';
+import { MessageType } from '../entities/messages.entity';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class NewMessageWSDto {

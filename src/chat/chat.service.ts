@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Messages } from './entities/enity.messages';
+import { Messages } from './entities/messages.entity';
 import { EntityManager, Repository } from 'typeorm';
 import { NewTextMessageDto } from './dto/new-message.dto';
 import { WsException } from '@nestjs/websockets';

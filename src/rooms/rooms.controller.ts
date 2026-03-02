@@ -10,7 +10,7 @@ import { RoomsService } from './rooms.service';
 import { CreateRoomPrivateDto } from './dto/create-room-private.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import type { Request } from 'express';
-import { User } from 'src/users/entities/entity.user';
+import { User } from 'src/users/entities/user.entity';
 import { ApiBearerAuth, ApiHeader, ApiResponse } from '@nestjs/swagger';
 import {
   IParticipant,

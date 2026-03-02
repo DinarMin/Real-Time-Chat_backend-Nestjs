@@ -12,7 +12,7 @@ import { ConfigService } from '@nestjs/config';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { LoginUserDto } from '../users/dto/login-user.dto';
 
-import { User } from 'src/users/entities/entity.user';
+import { User } from 'src/users/entities/user.entity';
 
 import { UsersService } from '../users/users.service';
 

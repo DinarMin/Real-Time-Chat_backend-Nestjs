@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsArray, IsEnum, IsString } from 'class-validator';
-import { RoomType } from '../entities/enity.rooms';
+import { RoomType } from '../entities/rooms.entity';
 
 class RoomDto {
   @ApiProperty({ example: '02c948f5-a994-488e-b171-fc5e76c9c12c' })

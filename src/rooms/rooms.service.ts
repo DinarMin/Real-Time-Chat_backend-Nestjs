@@ -6,11 +6,11 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Rooms, RoomType } from './entities/enity.rooms';
+import { Rooms, RoomType } from './entities/rooms.entity';
 import { DataSource, QueryRunner, Repository } from 'typeorm';
-import { Participant, RoleType } from './entities/enity.participant';
+import { Participant, RoleType } from './entities/participant.entity';
 import { ChatService } from 'src/chat/chat.service';
-import { Messages } from 'src/chat/entities/enity.messages';
+import { Messages } from 'src/chat/entities/messages.entity';
 import { CreateRoomPrivateDto } from './dto/create-room-private.dto';
 import { RelatedUsers } from './interfaces/related-users.interface';
 import { CreateRoomPublicDto } from './dto/create-room-public.dto';

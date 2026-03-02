@@ -21,8 +21,10 @@
     "compodoc": "npx @compodoc/compodoc -p tsconfig.json -s",
     "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli",
     "migration:create": "typeorm -- migration:create .src/migrations",
-    "migration:generate": "npm run typeorm -- migration:generate -d ./src/config/typeorm.datasource.ts",
-    "migration:run": "npm run typeorm -- migration:run -d ./src/config/typeorm.datasource.ts"
+    "migration:generate:init": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:generate src/migrations/init -d src/config/typeorm.datasource.ts",
+    "migration:run": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:run -d ./src/config/typeorm.datasource.ts",
+    "db:create": "ts-node -r tsconfig-paths/register ./src/config/db-create.ts",
+    "db:init": "npm run db:create && npm run migration:run"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
@@ -49,6 +51,7 @@
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "socket.io": "^4.8.3",
+    "typeorm-extension": "^3.9.0",
     "uuid": "^13.0.0"
   },
   "devDependencies": {

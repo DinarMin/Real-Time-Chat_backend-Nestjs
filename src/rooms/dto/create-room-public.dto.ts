@@ -1,5 +1,5 @@
 import { IsArray, IsEnum, IsObject, IsString } from 'class-validator';
-import { RoomType } from '../entities/enity.rooms';
+import { RoomType } from '../entities/rooms.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import { FirstMessageDto } from 'src/chat/dto/first-message.dto';
 

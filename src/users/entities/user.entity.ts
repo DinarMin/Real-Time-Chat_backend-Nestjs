@@ -6,9 +6,9 @@ import {
   OneToMany,
 } from 'typeorm';
 
-import { Participant } from 'src/rooms/entities/enity.participant';
-import { Messages } from 'src/chat/entities/enity.messages';
-import { Calls } from 'src/calls/entities/enity.calls';
+import { Participant } from 'src/rooms/entities/participant.entity';
+import { Messages } from 'src/chat/entities/messages.entity';
+import { Calls } from 'src/calls/entities/calls.entity';
 @Entity()
 export class User {
   @PrimaryGeneratedColumn('uuid')

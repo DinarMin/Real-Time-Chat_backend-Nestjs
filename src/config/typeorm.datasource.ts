@@ -1,11 +1,5 @@
 import * as dotenv from 'dotenv';
 import { DataSource } from 'typeorm';
-import migrations from 'src/migrations';
-import { User } from 'src/users/entities/entity.user';
-import { Rooms } from 'src/rooms/entities/enity.rooms';
-import { Participant } from 'src/rooms/entities/enity.participant';
-import { Messages } from 'src/chat/entities/enity.messages';
-import { Calls } from 'src/calls/entities/enity.calls';
 
 const ENV_FILE = `.env`;
 
@@ -19,8 +13,8 @@ export default new DataSource({
   password: process.env.POSTGRES_PASSWORD,
   database: process.env.POSTGRES_DATABASE,
   synchronize: false,
-  entities: [User, Rooms, Participant, Messages, Calls],
+  entities: ['src/**/*.entity.ts'],
+  migrations: ['src/migrations/*.ts'],
   migrationsRun: process.env.DB_MIGRATIONS_RUN === 'true',
   migrationsTransactionMode: 'all',
-  migrations,
 });
