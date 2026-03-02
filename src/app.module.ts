@@ -9,6 +9,7 @@ import { AuthModule } from './auth/auth.module';
 import { ChatModule } from './chat/chat.module';
 import { RoomsModule } from './rooms/rooms.module';
 import { CallsModule } from './calls/calls.module';
+import { RedisModule } from './redis/redis.module';
 import cookieParser from 'cookie-parser';
 
 @Module({
@@ -26,6 +27,7 @@ import cookieParser from 'cookie-parser';
     ChatModule,
     RoomsModule,
     CallsModule,
+    RedisModule,
   ],
   controllers: [AppController],
   providers: [AppService],
