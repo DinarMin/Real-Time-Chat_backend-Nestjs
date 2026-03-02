@@ -10,7 +10,7 @@ export interface IParticipantRes {
   role: string;
 }
 
-export interface IRoomResponse {
+export interface IParticipantResPrivate {
   room: {
     id: string;
     name: string;
