@@ -1,5 +1,5 @@
 {
-  "name": "meet-project",
+  "name": "real-time_chat_backend",
   "version": "0.0.1",
   "description": "",
   "author": "",
@@ -18,7 +18,11 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "compodoc": "npx @compodoc/compodoc -p tsconfig.json -s"
+    "compodoc": "npx @compodoc/compodoc -p tsconfig.json -s",
+    "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli",
+    "migration:create": "typeorm -- migration:create .src/migrations",
+    "migration:generate": "npm run typeorm -- migration:generate -d ./src/config/typeorm.datasource.ts",
+    "migration:run": "npm run typeorm -- migration:run -d ./src/config/typeorm.datasource.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
@@ -37,6 +41,7 @@
     "class-validator": "^0.14.3",
     "cookie-parser": "^1.4.7",
     "helmet": "^8.1.0",
+    "ioredis": "^5.10.0",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
@@ -44,7 +49,6 @@
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "socket.io": "^4.8.3",
-    "typeorm": "^0.3.28",
     "uuid": "^13.0.0"
   },
   "devDependencies": {
@@ -55,6 +59,7 @@
     "@nestjs/testing": "^11.1.11",
     "@types/bcrypt": "^6.0.0",
     "@types/express": "^5.0.0",
+    "@types/ioredis": "^4.28.10",
     "@types/jest": "^30.0.0",
     "@types/node": "^22.10.7",
     "@types/passport-jwt": "^4.0.1",
@@ -72,6 +77,7 @@
     "ts-loader": "^9.5.2",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
+    "typeorm": "^0.3.28",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.20.0"
   },
