@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { ChatGateway } from './chat.gateway';
 import { ChatController } from './chat.controller';
@@ -7,12 +7,14 @@ import { Messages } from './entities/enity.messages';
 import { AuthModule } from 'src/auth/auth.module';
 import { RoomsModule } from 'src/rooms/rooms.module';
 import { Rooms } from 'src/rooms/entities/enity.rooms';
+import { RedisModule } from 'src/redis/redis.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Messages, Rooms]),
     AuthModule,
-    RoomsModule,
+    forwardRef(() => RoomsModule),
+    forwardRef(() => RedisModule),
   ],
   providers: [ChatGateway, ChatService],
   controllers: [ChatController],
