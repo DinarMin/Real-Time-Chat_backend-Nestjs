@@ -10,7 +10,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './entities/entity.user';
 import { ReponseSearchUsername } from './interfaces/response-searchUsername.interface';
-import { SearchUsernameDto } from './dto/search-username.dto';
 
 @Injectable()
 export class UsersService {
@@ -73,5 +72,25 @@ export class UsersService {
         username: user.username,
       }),
     );
+  }
+
+  async renameUsername(userId: string, newUsername: string) {
+    const exist = await this.userRepository.exists({
+      where: { username: newUsername },
+    });
+
+    if (exist) {
+      throw new ConflictException('This username already exists.');
+    }
+
+    const updateUsername = await this.userRepository.update(userId, {
+      username: newUsername,
+    });
+
+    if (updateUsername.affected == 1) {
+      return { message: 'Username changed successfully', status: 200 };
+    }
+
+    return updateUsername;
   }
 }
