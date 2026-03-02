@@ -4,6 +4,7 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 
 import { Rooms } from './enity.rooms';
@@ -44,6 +45,6 @@ export class Participant {
   })
   role: RoleType;
 
-  @Column({ type: 'int', nullable: true })
-  lastReadMessageId: number;
+  @Column({ type: 'timestamp', name: 'last_read_at', nullable: true })
+  lastReadAt: Date | null;
 }
