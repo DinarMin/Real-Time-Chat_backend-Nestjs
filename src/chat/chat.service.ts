@@ -1,19 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Messages } from './entities/enity.messages';
-import { DataSource, EntityManager, Repository } from 'typeorm';
-import { Rooms } from 'src/rooms/entities/enity.rooms';
+import { EntityManager, Repository } from 'typeorm';
 import { NewTextMessageDto } from './dto/new-message.dto';
 import { WsException } from '@nestjs/websockets';
+import { RoomsService } from 'src/rooms/rooms.service';
 
 @Injectable()
 export class ChatService {
   constructor(
     @InjectRepository(Messages)
     private readonly messageRepository: Repository<Messages>,
-    @InjectRepository(Rooms)
-    private readonly roomsRepository: Repository<Rooms>,
-    private readonly dataSource: DataSource,
+    private readonly roomService: RoomsService,
   ) {}
   /**
    * Writes a new message to the database.
@@ -33,7 +31,6 @@ export class ChatService {
         ? manager.getRepository(Messages)
         : this.messageRepository;
 
-      console.log(data);
       const message: Messages = repo.create(data);
 
       const savedMessages = await repo.save(message);
@@ -57,17 +54,44 @@ export class ChatService {
     }
   }
 
-  async getAllMessagesFromRoom(data) {
+  async getAllMessagesFromRoom(data: { roomId: string }) {
     try {
       const result = await this.messageRepository
         .createQueryBuilder('messages')
         .where('messages.roomId = :roomId', { roomId: data.roomId })
-        .andWhere('messages.senderId = :senderId', { senderId: data.senderId })
         .andWhere('messages.deletedAt IS NULL')
+        .orderBy('messages.createdAt', 'DESC')
+        .take(20)
         .getMany();
       return result;
     } catch (error) {
       throw new WsException('Server error');
     }
+  }
+
+  async readMessage(data) {
+    await this.roomService.updateLastReadAt(data);
+  }
+
+  async unreadCount(data: { userId: string; roomIds: string[] }) {
+    const countArray: { roomId: string; count: number }[] = await Promise.all(
+      data.roomIds.map(async (roomId) => {
+        const count = await this.messageRepository
+          .createQueryBuilder('m')
+          .innerJoin(
+            'participant',
+            'p',
+            'p.roomId = m.roomId AND p.userId = :userId',
+            { userId: data.userId },
+          )
+          .where('m.roomId = :id', { id: roomId })
+          .andWhere("m.createdAt > COALESCE(p.lastReadAt, '1970-01-01')")
+          .andWhere('m.deletedAt IS NULL')
+          .getCount();
+
+        return { roomId, count };
+      }),
+    );
+    return countArray;
   }
 }
