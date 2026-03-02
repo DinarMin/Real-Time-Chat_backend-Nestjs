@@ -1,5 +1,7 @@
 import {
   BadRequestException,
+  forwardRef,
+  Inject,
   Injectable,
   InternalServerErrorException,
 } from '@nestjs/common';
@@ -9,7 +11,9 @@ import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { Participant, RoleType } from './entities/enity.participant';
 import { ChatService } from 'src/chat/chat.service';
 import { Messages } from 'src/chat/entities/enity.messages';
-import { CreatePrivateRoomDto } from './dto/create-room.dto';
+import { CreateRoomPrivateDto } from './dto/create-room-private.dto';
+import { RelatedUsers } from './interfaces/related-users.interface';
+import { CreateRoomPublicDto } from './dto/create-room-public.dto';
 
 @Injectable()
 export class RoomsService {
@@ -18,12 +22,13 @@ export class RoomsService {
     private readonly roomsRepository: Repository<Rooms>,
     @InjectRepository(Participant)
     private readonly participantRepository: Repository<Participant>,
-    private readonly chatService: ChatService,
+    @Inject(forwardRef(() => ChatService))
+    private chatService: ChatService,
     private dataSource: DataSource,
   ) {}
 
   async createPrivate(
-    roomDto: CreatePrivateRoomDto,
+    roomDto: CreateRoomPrivateDto,
     userId: string,
   ): Promise<any> {
     const queryRunner: QueryRunner = this.dataSource.createQueryRunner();
@@ -43,13 +48,12 @@ export class RoomsService {
           user: { id: userId },
           rooms: savedRoom,
           role: RoleType.ADMIN,
-          lastReadMessageId: 0,
+          lastReadAt: new Date(),
         },
         {
           user: { id: memberId },
-          role: RoleType.ADMIN,
           rooms: savedRoom,
-          lastReadMessageId: 0,
+          lastReadAt: new Date(),
         },
       ]);
 
@@ -69,6 +73,63 @@ export class RoomsService {
       return {
         room: { ...room },
         participant: { ...participant },
+        firstMessage: { ...firstMessage },
+      };
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw new BadRequestException('Error creating chat', err.code);
+    } finally {
+      await queryRunner.release();
+    }
+  }
+  async createPublic(
+    roomDto: CreateRoomPublicDto,
+    userId: string,
+  ): Promise<any> {
+    const queryRunner: QueryRunner = this.dataSource.createQueryRunner();
+
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      const roomRepo = queryRunner.manager.getRepository(Rooms);
+      const participantRepo = queryRunner.manager.getRepository(Participant);
+
+      const { name, type, message, memberId } = roomDto;
+      const room = roomRepo.create({ name, type });
+      const savedRoom = await roomRepo.save(room);
+
+      const participantAdmin: Participant = participantRepo.create({
+        user: { id: userId },
+        rooms: savedRoom,
+        role: RoleType.ADMIN,
+        lastReadAt: new Date(),
+      });
+
+      await participantRepo.save(participantAdmin);
+
+      const participantMember: Participant[] = memberId.map((id) =>
+        participantRepo.create({
+          user: { id },
+          rooms: savedRoom,
+          lastReadAt: new Date(),
+        }),
+      );
+      await participantRepo.save(participantMember);
+
+      const firstMessage: Messages | void =
+        await this.chatService.createMessageText(
+          {
+            ...message,
+            roomId: savedRoom.id,
+            senderId: userId,
+          },
+          queryRunner.manager,
+        );
+
+      await queryRunner.commitTransaction();
+      return {
+        room: { ...room },
+        participant: { participantAdmin, ...participantMember },
         firstMessage: { ...firstMessage },
       };
     } catch (err) {
@@ -116,5 +177,26 @@ export class RoomsService {
       console.error(error?.message);
       throw new InternalServerErrorException('Failed to delete room');
     }
+  }
+
+  async getAllRelatedUserId(
+    roomIds: string[],
+    userId: string,
+  ): Promise<string[]> {
+    const result: RelatedUsers[] = await this.participantRepository
+      .createQueryBuilder('p')
+      .select('DISTINCT p.userId', 'userId')
+      .where('p.roomId IN (:...roomIds)', { roomIds })
+      .andWhere('p.userId != :id', { id: userId })
+      .getRawMany();
+
+    return result.map((r) => r.userId);
+  }
+
+  async updateLastReadAt(data: { roomId: string; userId: string }) {
+    await this.participantRepository.update(
+      { roomId: data.roomId, userId: data.userId },
+      { lastReadAt: new Date() },
+    );
   }
 }
