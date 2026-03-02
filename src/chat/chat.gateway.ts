@@ -13,16 +13,19 @@ import { RoomsService } from 'src/rooms/rooms.service';
 import { ApiTags } from '@nestjs/swagger';
 import { NewRoomDto } from './dto/new-room.dto';
 import { NewMessageWSDto } from './dto/new-messsage-ws.dto';
+import { RedisService } from 'src/redis/redis.service';
 
 @ApiTags('Chat WebSocket')
 @WebSocketGateway({ cors: { origin: '*' } })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
-  @WebSocketServer() server: Server;
+  @WebSocketServer()
+  server: Server;
 
   constructor(
     private readonly chatService: ChatService,
     private readonly authService: AuthService,
     private readonly roomService: RoomsService,
+    private readonly redisService: RedisService,
   ) {}
   /**
    * Client connects.
@@ -48,21 +51,48 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       }
 
       client['userId'] = id;
-      console.log(client);
+
       const roomsIds: string[] = await this.roomService.getAllRoomId(id);
+
+      if (roomsIds.length > 0) {
+        client['roomIds'] = roomsIds;
+      }
 
       await client.join('u-personal-room_' + id);
       await client.join(roomsIds);
 
+      await this.redisService.setOnline(client['userId']);
+
       console.log('New user connected.. : ', client.id);
     } catch (error) {
       client.disconnect(true);
+      this.redisService.setOffline(client['userId']);
       console.error('ERROR:', error);
     }
   }
 
-  handleDisconnect(client: Socket): void {
+  async handleDisconnect(client: Socket): Promise<void> {
+    this.redisService.setOffline(client['userId']);
     console.log('User disconnected', client.id);
+  }
+
+  @SubscribeMessage('init')
+  async handleInit(client: Socket) {
+    if (Object.hasOwn(client, 'roomIds')) {
+      const result = await this.redisService.onlineUsers(
+        client['roomIds'],
+        client['userId'],
+      );
+      client.emit('online-users', result);
+    }
+
+    const unReadCount: { roomId: string; count: number }[] =
+      await this.chatService.unreadCount({
+        userId: client['userId'],
+        roomIds: client['roomIds'],
+      });
+
+    client.emit('unread-count', unReadCount);
   }
 
   @SubscribeMessage('message')
@@ -84,7 +114,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('delete-message')
-  async deleteMessage(client: Socket, data) {
+  async deleteMessage(
+    client: Socket,
+    data: { messageId: string; roomId: string },
+  ) {
     try {
       await this.chatService.deleteMessage(data.messageId);
       this.server
@@ -96,15 +129,27 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('get-messages')
-  async getMessagesFromRoom(client: Socket, data) {
+  async getMessagesFromRoom(client: Socket, data: { roomId: string }) {
     try {
-      const result = await this.chatService.getAllMessagesFromRoom({
-        ...data,
-        senderId: client['userId'],
-      });
+      const result = await this.chatService.getAllMessagesFromRoom(data);
       this.server.to(data.roomId).emit('messages-room', result);
     } catch (error) {
       console.error(error.message);
     }
+  }
+
+  @SubscribeMessage('read-message')
+  async readMessagesRoom(client: Socket, data: { roomId: string }) {
+    await this.chatService.readMessage({ ...data, userId: client['userId'] });
+  }
+
+  @SubscribeMessage('heartbeat')
+  async heartbeatIsOnline(client: Socket) {
+    this.redisService.setOnline(client['userId']);
+    const result = await this.redisService.onlineUsers(
+      client['roomsIds'],
+      client['userId'],
+    );
+    client.emit('online-users', result);
   }
 }
