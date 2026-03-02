@@ -1,5 +1,6 @@
 import { ConfigService } from '@nestjs/config';
 import type { TypeOrmModuleOptions } from '@nestjs/typeorm';
+import migrations from 'src/migrations';
 
 export async function getTypeOrmConfig(
   configService: ConfigService,
@@ -14,5 +15,7 @@ export async function getTypeOrmConfig(
     autoLoadEntities: true,
     synchronize: true,
     entities: ['entity/*.js'],
+    migrationsRun: configService.getOrThrow('DB_MIGRATIONS_RUN') == true,
+    migrations,
   };
 }
