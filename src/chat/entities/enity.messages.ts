@@ -45,7 +45,7 @@ export class Messages {
   })
   type: MessageType;
 
-  @CreateDateColumn({ name: 'created' })
+  @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 
   @DeleteDateColumn({ name: 'deleted_at', nullable: true })
